@@ -6,3 +6,7 @@ jq命令格式化输出
 ```
 ault read -format=json sys/auth | jq '.data | map_values({type, default_lease_ttl: .config.default_lease_ttl})'
 ```
+找出某个端口被占用的进程
+```
+ss -tnulp  |grep :53
+```
