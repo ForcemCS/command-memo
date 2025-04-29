@@ -13,3 +13,24 @@ CMD ["5"]
 command: ["sleep2.0"]
 args: ["10"]
 ```
+### 容器安全
+```
+docker run --user=1001 ubuntu sleep 3600  
+
+docker run --cap-add MAC_ADMIN ubuntu  
+
+apiVersion: v1  
+kind: Pod  
+metadata:  
+  name: web-pod  
+spec:  
+  containers:  
+    - name: ubuntu  
+      image: ubuntu  
+      command: ["sleep", "3600"]  
+      securityContext:  
+        runAsUser: 1000
+        #只发生在容器级别  
+        capabilities:  
+          add: ["MAC_ADMIN"]  
+```
