@@ -10,3 +10,7 @@ ault read -format=json sys/auth | jq '.data | map_values({type, default_lease_tt
 ```
 ss -tnulp  |grep :53
 ```
+生成32位的随机密钥并进行base64编码
+```
+head -c 32 /dev/urandom | base64
+```
