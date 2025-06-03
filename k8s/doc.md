@@ -43,3 +43,18 @@ crictl inspect 91116cff5b254  | grep -i pid
             "pid": 1
             "type": "pid"
 ```
+### qps
+```
+ab -n 1000 -c 50  http://example:80/
+
+Concurrency Level:      50               #并发数
+Time taken for tests:   31.538 seconds
+Complete requests:      1000
+Failed requests:        0                #失败请求数
+Total transferred:      478000 bytes
+HTML transferred:       105000 bytes
+Requests per second:    31.71 [#/sec] (mean)      #31.71 次/秒（这是你服务的当前吞吐能力）
+Time per request:       1576.924 [ms] (mean)      #每个请求平均耗时 1576ms（也就是 1.5 秒左右响应时间）
+Time per request:       31.538 [ms] (mean, across all concurrent requests)
+Transfer rate:          14.80 [Kbytes/sec] received
+```
