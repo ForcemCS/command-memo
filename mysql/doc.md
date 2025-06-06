@@ -31,6 +31,10 @@ ALTER USER 'root'@'%' IDENTIFIED BY 'xxxxx';
 
 
 FLUSH PRIVILEGES;
+
+#创建一个只读用户
+GRANT SELECT ON *.* TO 'r_user'@'%' IDENTIFIED BY 'com.012A';
+FLUSH PRIVILEGES;
 ```
 ## 修改表结构默认值
 ```
