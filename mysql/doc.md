@@ -58,4 +58,8 @@ SET FOREIGN_KEY_CHECKS = 1;
 #修改表结构默认值
 ALTER TABLE `T_USER`
 MODIFY COLUMN `pers` varchar(4096) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'xxx';
+#追加权限
+UPDATE `T_USER`
+SET `pers` = CONCAT(`pers`, '435b8,')
+WHERE `pers` NOT LIKE '%435b8,%';
 ```
