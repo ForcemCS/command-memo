@@ -67,3 +67,13 @@ UPDATE `T_USER`
 SET `pers` = CONCAT(`pers`, '435b8,')
 WHERE `pers` NOT LIKE '%435b8,%';
 ```
+
+创建定时任务
+
+```
+#查看定时任务
+SHOW EVENTS FROM your_database_name;
+#删除事件
+DROP EVENT IF EXISTS `export_daily_level_log_v57`;
+```
+
