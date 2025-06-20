@@ -76,4 +76,9 @@ SHOW EVENTS FROM your_database_name;
 #删除事件
 DROP EVENT IF EXISTS `export_daily_level_log_v57`;
 ```
+## 分组求和
+```
+SELECT uid ,SUM(amount) as total_amount  FROM T_ORDER WHERE `status` =2 GROUP BY uid ;
 
+SELECT uid ,SUM(amount) as total_amount  FROM T_ORDER WHERE `status` =2 GROUP BY uid  HAVING total_amount >= 50000;
+```
