@@ -82,3 +82,19 @@ SELECT uid ,SUM(amount) as total_amount  FROM T_ORDER WHERE `status` =2 GROUP BY
 
 SELECT uid ,SUM(amount) as total_amount  FROM T_ORDER WHERE `status` =2 GROUP BY uid  HAVING total_amount >= 50000;
 ```
+## 充值总额
+```
+SELECT *
+FROM db_ro3_operation_log.LOG_MVPBOSS_KILL_RECORD AS log
+WHERE 
+  CAST(log.sid AS CHAR) LIKE '2%'  -- 条件1：sid 以 2 开头
+  AND EXISTS (
+    SELECT 1
+    FROM db_ro3_sdk2.T_ORDER AS o
+    WHERE o.status = 2
+      AND o.uid IS NOT NULL
+    GROUP BY o.uid
+    HAVING SUM(o.amount) >= 50000
+      AND log.kill_roles LIKE CONCAT('%', o.uid, '%')  -- 条件2：玩家uid出现在kill_roles中
+);
+```
