@@ -1,0 +1,8 @@
+### 战力排行
+```
+SELECT uid, power
+FROM SNAP_ROLE
+WHERE sid BETWEEN 20000 AND 29999
+ORDER BY power DESC
+LIMIT 11;
+```
