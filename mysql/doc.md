@@ -98,3 +98,13 @@ WHERE
       AND log.kill_roles LIKE CONCAT('%', o.uid, '%')  -- 条件2：玩家uid出现在kill_roles中
 );
 ```
+
+## 条件查修
+```
+SELECT *
+FROM SNAP_ROLE
+WHERE sid LIKE '2000%'                          -- sid以2000开头
+  AND max_base_lv = 55                          -- 等于55级
+  AND total_online_time > 12 * 60 * 60          -- 超过12小时（以秒为单位）
+  AND last_login_time >= '2025-06-25 00:00:00'; -- 从2025-06-25至今
+```
