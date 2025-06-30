@@ -80,7 +80,7 @@ DROP EVENT IF EXISTS `export_daily_level_log_v57`;
 ```
 SELECT uid ,SUM(amount) as total_amount  FROM T_ORDER WHERE `status` =2 GROUP BY uid ;
 
-SELECT uid ,SUM(amount) as total_amount  FROM T_ORDER WHERE `status` =2 GROUP BY uid  HAVING total_amount >= 50000;
+SELECT uid ,SUM(amount) as total_amount  FROM T_ORDER WHERE `status` =2 GROUP BY uid  HAVING total_amount >= 50000 order by total_amount DESC;
 ```
 ## 充值总额
 ```
