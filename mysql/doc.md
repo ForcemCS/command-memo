@@ -66,6 +66,12 @@ MODIFY COLUMN `pers` varchar(4096) CHARACTER SET utf8mb4 COLLATE utf8mb4_general
 UPDATE `T_USER`
 SET `pers` = CONCAT(`pers`, '435b8,')
 WHERE `pers` NOT LIKE '%435b8,%';
+
+UPDATE `T_USER` 
+SET 
+    `pers` = CONCAT(`pers`, '2e6cc,')
+WHERE 
+    FIND_IN_SET('2e6cc', `pers`) = 0;
 ```
 
 创建定时任务
