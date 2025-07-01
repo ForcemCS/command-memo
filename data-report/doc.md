@@ -72,3 +72,16 @@ LEFT JOIN db_ro3_operation_log.SNAP_ROLE sr ON li.uid = sr.uid
 WHERE
     sr.sid LIKE '2%';
 ```
+### 玩家升级的最新记录
+```
+SELECT l.*
+FROM level_change_log l
+JOIN (
+    SELECT uid, MAX(time_stamp) AS max_time
+    FROM level_change_log
+    WHERE sid LIKE '2%'
+    GROUP BY uid
+) AS latest
+ON l.uid = latest.uid AND l.time_stamp = latest.max_time
+WHERE l.sid LIKE '2%';
+```
