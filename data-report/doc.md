@@ -85,3 +85,18 @@ JOIN (
 ON l.uid = latest.uid AND l.time_stamp = latest.max_time
 WHERE l.sid LIKE '2%';
 ```
+### mvpboss
+```
+SELECT *
+FROM LOG_MVPBOSS_KILL_RECORD
+WHERE 
+  (
+    (sid = 20001 AND time_stamp >= '2025-06-12' AND time_stamp < '2025-06-18')
+    OR
+    (sid = 20002 AND time_stamp >= '2025-06-13' AND time_stamp < '2025-06-19')
+    OR
+    (sid = 20003 AND time_stamp >= '2025-07-02' AND time_stamp < '2025-07-08')
+  )
+  AND gsitems IS NOT NULL AND gsitems != '';
+
+```
