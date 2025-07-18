@@ -50,4 +50,15 @@ Alice's branch. Commit 1. Change 2.
 然后我们选择想要的内容，最近执行commit
 #git commit -am "修复了 test.txt 中的合并冲突"
 ```
+从 Git 的索引（暂存区）中移除 introduction.py 文件的跟踪，但不删除磁盘上的实际文件。
+```
+git rm -r --cached introduction.py
 
+
+echo introduction.py >> .gitignore       # 忽略它
+git rm --cached introduction.py          # 停止跟踪
+git commit -m "Remove introduction.py from tracking"
+
+git fetch origin
+git reset --hard origin/main
+```
