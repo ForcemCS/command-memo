@@ -72,6 +72,13 @@ SET
     `pers` = CONCAT(`pers`, '2e6cc,')
 WHERE 
     FIND_IN_SET('2e6cc', `pers`) = 0;
+
+UPDATE `T_USER` 
+SET 
+    `pers` = CONCAT(`pers`, '0b176,', 'e3c15,')
+WHERE 
+    pers NOT LIKE '%,0b176,%'
+   OR pers NOT LIKE '%,e3c15,%';
 ```
 
 创建定时任务
