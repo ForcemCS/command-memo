@@ -58,3 +58,7 @@ Time per request:       1576.924 [ms] (mean)      #每个请求平均耗时 1576
 Time per request:       31.538 [ms] (mean, across all concurrent requests)
 Transfer rate:          14.80 [Kbytes/sec] received
 ```
+### net-tools
+```
+kubectl run -n consul --rm -it --image=wbitt/network-multitool net-tools
+```
