@@ -100,3 +100,19 @@ WHERE
   AND gsitems IS NOT NULL AND gsitems != '';
 
 ```
+### 某天充值次数玩家统计
+```
+SELECT recharge_times, COUNT(*) AS player_count
+FROM (
+    SELECT uid, COUNT(*) AS recharge_times
+    FROM T_ORDER
+    WHERE server_id = 20001
+      AND status = 2
+      AND create_time LIKE '%2025-06-25%'
+    GROUP BY uid
+) AS t
+WHERE recharge_times IN (1, 2, 3)
+GROUP BY recharge_times
+ORDER BY recharge_times;
+
+```
