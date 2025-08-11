@@ -14,3 +14,5 @@ ss -tnulp  |grep :53
 ```
 head -c 32 /dev/urandom | base64
 ```
+删除 /usr/local/bin 下指向 percona-xtrabackup-2.4/bin 的所有软链接
+find /usr/local/bin -type l -lname '*percona-xtrabackup-2.4/bin/*' -delete
