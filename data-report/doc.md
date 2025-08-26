@@ -116,3 +116,13 @@ GROUP BY recharge_times
 ORDER BY recharge_times;
 
 ```
+### 购买月卡并且充值两笔以上的
+```
+SELECT uid
+FROM T_ORDER
+WHERE server_id IN (40001, 40002)
+  AND status = 2
+GROUP BY uid
+HAVING COUNT(*) >= 2
+   AND SUM(CASE WHEN product_id = 270030001 THEN 1 ELSE 0 END) >= 1;
+```
