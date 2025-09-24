@@ -62,3 +62,8 @@ Transfer rate:          14.80 [Kbytes/sec] received
 ```
 kubectl run -n consul --rm -it --image=wbitt/network-multitool net-tools
 ```
+### 删除terminating的pv
+```
+kubectl patch pv pvc-df903dc1-2553-445c-8c92-2e468e762e19 -p '{"metadata":{"finalizers":null}}' --type=merge
+
+```
