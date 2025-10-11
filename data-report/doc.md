@@ -148,3 +148,46 @@ ORDER BY
     o.server_id, o.uid;
 
 ```
+### 开服当天充值，最后登录时间停留在第二天
+```
+SELECT 
+    r3.*, 
+    ROUND(SUM(r4.amount) / 100, 2) AS amount
+FROM 
+    T_ORDER r4 
+JOIN (
+    SELECT  
+        r1.uid, 
+        r1.nickname, 
+        r1.sid, 
+        r1.viplv, 
+        r1.last_login_time 
+    FROM 
+        SNAP_ROLE r1
+    JOIN (
+        SELECT DISTINCT 
+            o.uid, 
+            o.server_id, 
+            DATE(s.open_time) AS open_time
+        FROM 
+            T_ORDER o
+        JOIN 
+            T_SERVER s ON s.id = o.server_id
+        WHERE 
+            o.status = 2 
+            AND DATE(s.open_time) = DATE(o.create_time)
+    ) AS r2
+    ON 
+        r1.uid = r2.uid 
+        AND r1.sid = r2.server_id 
+        AND DATE(r1.last_login_time) = DATE(DATE_ADD(r2.open_time, INTERVAL 1 DAY))
+) AS r3 
+ON 
+    r4.uid = r3.uid 
+    AND r4.server_id = r3.sid 
+GROUP BY 
+    r4.uid
+ORDER BY 
+    RIGHT(r4.uid, 5);
+
+```
