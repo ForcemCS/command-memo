@@ -126,3 +126,25 @@ GROUP BY uid
 HAVING COUNT(*) >= 2
    AND SUM(CASE WHEN product_id = 270030001 THEN 1 ELSE 0 END) >= 1;
 ```
+### 开服连续三天充值的玩家
+```
+SELECT
+    o.uid,
+    o.server_id
+FROM
+    T_ORDER o
+    JOIN T_SERVER s ON o.server_id = s.id
+WHERE
+    s.site_id = 4
+    AND o.status = 2
+    AND o.server_id NOT IN (40001, 40002, 40003, 40004)
+    AND DATEDIFF(o.create_time, s.open_time) BETWEEN 0 AND 2
+GROUP BY
+    o.uid,
+    o.server_id
+HAVING
+    COUNT(DISTINCT DATEDIFF(o.create_time, s.open_time)) = 3
+ORDER BY
+    o.server_id, o.uid;
+
+```
