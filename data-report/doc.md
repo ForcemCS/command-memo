@@ -191,3 +191,21 @@ ORDER BY
     RIGHT(r4.uid, 5);
 
 ```
+
+### 开服前三天有任意一天充值的玩家
+```
+SELECT DISTINCT
+    o.server_id,
+    o.uid
+FROM
+    T_ORDER o
+    JOIN T_SERVER s ON o.server_id = s.id
+WHERE
+    s.site_id = 4
+    AND s.id NOT IN (40001, 40002, 40003, 40004, 40990)
+    AND o.status = 2
+    AND DATEDIFF(o.create_time, s.open_time) IN (0, 1, 2)
+ORDER BY
+    RIGHT(o.uid, 5);
+
+```
