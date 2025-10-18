@@ -209,3 +209,34 @@ ORDER BY
     RIGHT(o.uid, 5);
 
 ```
+```
+SELECT
+    T2.name AS server_name,
+    T1.server_id,
+    T1.uid
+FROM
+    db_ro3_dsk2.T_ORDER AS T1
+INNER JOIN
+    db_ro3_server.T_SERVER AS T2 ON T1.server_id = T2.id
+WHERE
+    -- 1. 确保充值成功
+    T1.status = 2
+    
+    -- 2. 充值时间在服务器实际开放之后 
+    AND T1.create_time >= T2.open_time
+    
+    -- 3. 充值时间在开服日期的两天后午夜之前（自然天1和2）
+    AND T1.create_time < DATE_ADD(DATE(T2.open_time), INTERVAL 2 DAY)
+    
+    -- 4. 新增条件：服务器 ID 必须以 4 开头
+    -- CAST(T1.server_id AS CHAR) 将整数转换为字符串，然后使用 LIKE '4%' 匹配
+    AND CAST(T1.server_id AS CHAR) LIKE '4%'
+
+GROUP BY
+    T1.server_id,
+    T1.uid,
+    T2.name
+ORDER BY
+    T1.server_id,
+    T1.uid;
+```
