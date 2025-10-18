@@ -240,3 +240,42 @@ ORDER BY
     T1.server_id,
     T1.uid;
 ```
+### 前两天任意一天充值，最后登录第二天
+```
+SELECT
+    T2.name AS server_name,
+    T1.server_id,
+    T1.uid,
+    T3.last_login_time -- 新增：显示最后登录时间
+FROM
+    db_ro3_dsk2.T_ORDER AS T1
+INNER JOIN
+    db_ro3_server.T_SERVER AS T2 ON T1.server_id = T2.id
+INNER JOIN
+    db_ro3_operation_log.SNAP_ROLE AS T3 ON T1.uid = T3.uid AND T1.server_id = T3.sid
+WHERE
+    -- 1. 确保充值成功
+    T1.status = 2
+    
+    -- 2. 充值时间在开服自然天 1 或 2 之间 (起始点：开服时刻；截止点：开服日期的两天后零点)
+    AND T1.create_time >= T2.open_time
+    AND T1.create_time < DATE_ADD(DATE(T2.open_time), INTERVAL 2 DAY)
+    
+    -- 3. 服务器 ID 必须以 4 开头
+    AND CAST(T1.server_id AS CHAR) LIKE '4%'
+
+    -- 4. 最后登录时间 (T3.last_login_time) 必须在开服的第二天
+    -- 开服第二天的零点
+    AND T3.last_login_time >= DATE_ADD(DATE(T2.open_time), INTERVAL 1 DAY)
+    -- 开服第三天的零点
+    AND T3.last_login_time < DATE_ADD(DATE(T2.open_time), INTERVAL 2 DAY)
+
+GROUP BY
+    T1.server_id,
+    T1.uid,
+    T2.name,
+    T3.last_login_time -- 确保符合 GROUP BY 规范
+ORDER BY
+    T1.server_id,
+    T1.uid;
+```
