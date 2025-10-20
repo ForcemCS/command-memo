@@ -279,3 +279,81 @@ ORDER BY
     T1.server_id,
     T1.uid;
 ```
+### 第一次选择的职业
+```
+SELECT
+    t1.*
+FROM
+    LOG_ADD_HERO_RECORD t1
+JOIN (
+    SELECT
+        uid,
+        MIN(time_stamp) AS min_time
+    FROM
+        LOG_ADD_HERO_RECORD
+    GROUP BY
+        uid
+) t2
+ON t1.uid = t2.uid AND t1.time_stamp = t2.min_time
+WHERE
+    t1.sid LIKE '4%';
+```
+### 职业占比
+```
+SELECT
+  e.job_id,
+  COUNT(DISTINCT e.uid) AS uid_count,
+  ROUND(
+    COUNT(DISTINCT e.uid) /
+    (SELECT COUNT(DISTINCT t.uid)
+     FROM (
+       SELECT t1.uid
+       FROM LOG_ADD_HERO_RECORD t1
+       JOIN (
+         SELECT uid, MIN(time_stamp) AS min_time
+         FROM LOG_ADD_HERO_RECORD
+         GROUP BY uid
+       ) t2 ON t1.uid = t2.uid AND t1.time_stamp = t2.min_time
+       WHERE CAST(t1.sid AS CHAR) LIKE '4%'
+     ) AS t
+    ) * 100, 2
+  ) AS percentage
+FROM (
+  SELECT t1.uid, t1.job_id
+  FROM LOG_ADD_HERO_RECORD t1
+  JOIN (
+    SELECT uid, MIN(time_stamp) AS min_time
+    FROM LOG_ADD_HERO_RECORD
+    GROUP BY uid
+  ) t2 ON t1.uid = t2.uid AND t1.time_stamp = t2.min_time
+  WHERE CAST(t1.sid AS CHAR) LIKE '4%'
+) AS e
+WHERE e.job_id IN (1,2,3,4,5)   -- 如果只关心 1-5 职业，可保留此行
+GROUP BY e.job_id
+ORDER BY e.job_id;
+```
+```
+-- 1) 创建临时表（会话级别）
+CREATE TEMPORARY TABLE earliest_records AS
+SELECT t1.uid, t1.job_id
+FROM LOG_ADD_HERO_RECORD t1
+JOIN (
+  SELECT uid, MIN(time_stamp) AS min_time
+  FROM LOG_ADD_HERO_RECORD
+  GROUP BY uid
+) t2 ON t1.uid = t2.uid AND t1.time_stamp = t2.min_time
+WHERE CAST(t1.sid AS CHAR) LIKE '4%';
+
+-- 2) 统计并计算百分比
+SELECT
+  job_id,
+  COUNT(*) AS uid_count,
+  ROUND(COUNT(*) / (SELECT COUNT(*) FROM earliest_records) * 100, 2) AS percentage
+FROM earliest_records
+WHERE job_id IN (1,2,3,4,5)
+GROUP BY job_id
+ORDER BY job_id;
+
+-- 3) （可选）删除临时表（会话结束后会自动删除）
+DROP TEMPORARY TABLE IF EXISTS earliest_records;
+```
