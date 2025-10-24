@@ -357,3 +357,30 @@ ORDER BY job_id;
 -- 3) （可选）删除临时表（会话结束后会自动删除）
 DROP TEMPORARY TABLE IF EXISTS earliest_records;
 ```
+### 2V2数据
+```
+SELECT *
+FROM `item_log_2025-10-22`
+WHERE change_type = 2
+  AND itemid = 24601861
+  AND sid LIKE '4%' 
+  AND (
+        (TIME(time_stamp) BETWEEN '12:00:00' AND '13:00:00')
+        OR
+        (TIME(time_stamp) BETWEEN '19:00:00' AND '20:00:00')
+      )
+
+UNION ALL
+
+SELECT *
+FROM `item_log_2025-10-23`
+WHERE change_type = 2
+  AND itemid = 24601861
+  AND sid LIKE '4%' 
+  AND (
+        (TIME(time_stamp) BETWEEN '12:00:00' AND '13:00:00')
+        OR
+        (TIME(time_stamp) BETWEEN '19:00:00' AND '20:00:00')
+      );
+
+```
