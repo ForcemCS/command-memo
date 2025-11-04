@@ -384,3 +384,7 @@ WHERE change_type = 2
       );
 
 ```
+### dau
+```
+select sid,ifnull(sum(1),0) as dau, `date` from KPI_ACTIVE where `date`>='2025-11-01' and `date`<="2025-11-04" group by sid,date
+```
