@@ -388,3 +388,21 @@ WHERE change_type = 2
 ```
 select sid,ifnull(sum(1),0) as dau, `date` from KPI_ACTIVE where `date`>='2025-11-01' and `date`<="2025-11-04" group by sid,date
 ```
+### 玩家累计充值
+```
+SELECT
+    uid,
+    server_id,
+    SUM(T.amount / 100) AS 累计充值金额
+FROM
+    T_ORDER AS T
+WHERE
+    T.status = 2 -- 筛选出成功订单（已发货）
+    AND T.uid IS NOT NULL -- 排除uid为空的记录
+GROUP BY
+    uid
+HAVING
+    累计充值金额 >= 2000 -- 可选：只显示有成功充值的玩家
+ORDER BY
+    累计充值金额 DESC; -- 可选：按累计充值金额降序排列
+```
