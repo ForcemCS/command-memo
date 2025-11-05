@@ -405,4 +405,34 @@ HAVING
     累计充值金额 >= 2000 -- 可选：只显示有成功充值的玩家
 ORDER BY
     累计充值金额 DESC; -- 可选：按累计充值金额降序排列
+
+
+SELECT
+    T1.玩家ID AS uid,
+    T1.累计充值金额,
+    T2.nickname AS 昵称,
+    T2.sid AS 服务器ID,
+    T2.viplv AS VIP等级,
+    T2.diamond AS 钻石余额,
+    T2.max_base_lv AS 最高基础等级
+FROM
+    (
+        -- 子查询：计算累计充值金额并过滤
+        SELECT
+            uid AS 玩家ID,
+            SUM(T.amount / 100) AS 累计充值金额
+        FROM
+            T_ORDER AS T
+        WHERE
+            T.status = 2        -- 筛选出成功订单
+            AND T.uid IS NOT NULL
+        GROUP BY
+            uid
+        HAVING
+            累计充值金额 > 2000 -- 过滤：只保留累计充值金额大于 2000 的玩家
+    ) AS T1
+INNER JOIN
+    db_ro3_operation_log.SNAP_ROLE AS T2 ON T1.玩家ID = T2.uid -- 【修正：使用完整的数据库.表名】
+ORDER BY
+    T1.累计充值金额 DESC; -- 按累计充值金额降序排列
 ```
