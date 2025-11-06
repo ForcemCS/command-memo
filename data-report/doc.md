@@ -436,3 +436,21 @@ INNER JOIN
 ORDER BY
     T1.累计充值金额 DESC; -- 按累计充值金额降序排列
 ```
+### 充值统计
+```
+SELECT 
+    DATE_FORMAT(create_time, '%Y-%m') AS month,
+    ROUND(SUM(amount / 100), 2) AS total_amount
+FROM T_ORDER
+WHERE 
+    site_id = 4
+    AND status = 2
+    AND server_id NOT IN (40990)
+    AND create_time >= '2025-08-01 00:00:00'
+    AND create_time <  '2025-12-01 00:00:00'
+GROUP BY 
+    DATE_FORMAT(create_time, '%Y-%m')
+ORDER BY 
+    month;
+
+```
