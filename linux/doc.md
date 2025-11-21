@@ -20,7 +20,7 @@ find /usr/local/bin -type l -lname '*percona-xtrabackup-2.4/bin/*' -delete
 ```
 rsync
 ```
-rsync -av --info=progress2 -e "ssh -p 30022" core-skynet-1-1763712241 root@10.10.0.220:/root/skynet/
+rsync -av --info=progress2 -e "ssh -p 3112" core-skynet-1-1763712241 root@10.10.0.xx:/root/skynet/
 
 ```
 
