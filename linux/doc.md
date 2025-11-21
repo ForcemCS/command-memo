@@ -15,4 +15,12 @@ ss -tnulp  |grep :53
 head -c 32 /dev/urandom | base64
 ```
 删除 /usr/local/bin 下指向 percona-xtrabackup-2.4/bin 的所有软链接
+```
 find /usr/local/bin -type l -lname '*percona-xtrabackup-2.4/bin/*' -delete
+```
+rsync
+```
+rsync -av --info=progress2 -e "ssh -p 30022" core-skynet-1-1763712241 root@10.10.0.220:/root/skynet/
+
+```
+
