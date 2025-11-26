@@ -1,0 +1,4 @@
+ansible gameservers -m find -a 'paths=/var/local patterns=core-skynet* recurse=yes'
+
+ansible-playbook playbooks/clean_core.yml --check
+

@@ -1,0 +1,16 @@
+- hosts: gameservers
+  become: yes
+  tasks:
+    - name: Find core-skynet files on remote hosts
+      ansible.builtin.find:
+        paths: "/var/local"
+        patterns: "core-skynet*"
+        file_type: file
+        recurse: yes
+      register: to_delete
+
+    - name: Delete core-skynet files
+      file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ to_delete.files }}"
