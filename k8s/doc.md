@@ -67,3 +67,8 @@ kubectl run -n consul --rm -it --image=wbitt/network-multitool net-tools
 kubectl patch pv pvc-df903dc1-2553-445c-8c92-2e468e762e19 -p '{"metadata":{"finalizers":null}}' --type=merge
 
 ```
+### 获取节点信息
+```
+kubectl get nodes -o go-template='{{range .items}}{{range .status.addresses}}{{if eq .type "ExternalIP"}}{{.address}}{{"\n"}}{{end}}{{end}}{{end}}'
+kubectl get nodes -o go-template='{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}'
+```
