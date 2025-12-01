@@ -72,3 +72,7 @@ kubectl patch pv pvc-df903dc1-2553-445c-8c92-2e468e762e19 -p '{"metadata":{"fina
 kubectl get nodes -o go-template='{{range .items}}{{range .status.addresses}}{{if eq .type "ExternalIP"}}{{.address}}{{"\n"}}{{end}}{{end}}{{end}}'
 kubectl get nodes -o go-template='{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}'
 ```
+### 查看证书详细信息
+```
+kubectl get secret xbot-tls -o jsonpath='{.data.tls\.crt}' | base64 -d | openssl x509 -noout -text
+```
