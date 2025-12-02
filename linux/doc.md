@@ -30,3 +30,6 @@ sudo tee /usr/local/bin/mysql-cli >/dev/null <<'EOF'
 docker run --rm -it mysql:5.7 mysql "$@"
 EOF
 ```
+检查容器是否在同一个网络
+docker inspect -f '{{range .NetworkSettings.Networks}}{{.NetworkID}}{{end}}' 8492c130b23f
+```
