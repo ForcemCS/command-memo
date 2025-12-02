@@ -23,4 +23,10 @@ rsync
 rsync -av --info=progress2 -e "ssh -p 3112" core-skynet-1-1763712241 root@10.10.0.xx:/root/skynet/
 
 ```
-
+快捷命令
+```
+sudo tee /usr/local/bin/mysql-cli >/dev/null <<'EOF'
+#!/bin/bash
+docker run --rm -it mysql:5.7 mysql "$@"
+EOF
+```
