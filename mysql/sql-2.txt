@@ -1,0 +1,117 @@
+SELECT
+  -- ==========================================
+  -- 1. 玩家基础信息 (来自 SNAP_ROLE)
+  -- ==========================================
+  role.uid,
+  role.sid,
+  role.nickname,
+  role.viplv,
+
+  -- ==========================================
+  -- 2. 历史总充值 (来自 T_ORDER)
+  -- ==========================================
+  -- 如果没有充值记录显示为 0
+  IFNULL(pay.total_recharge, 0) AS total_recharge_amount,
+
+  -- ==========================================
+  -- 3. 活动聚合数据 (来自 poli_island_log 主表)
+  -- ==========================================
+  
+  -- [1] 欢乐冒险当前关卡 (Type 1 最大关卡)
+  MAX(CASE WHEN log.stagetype = 1 THEN log.stageid ELSE 0 END) AS '欢乐冒险当前关卡id',
+
+  -- [2] 极限挑战当前关卡 (Type 2 最大关卡)
+  MAX(CASE WHEN log.stagetype = 2 THEN log.stageid ELSE 0 END) AS '极限挑战当前关卡id',
+
+  -- [3] 欢乐冒险-历史-挑战总次数 (Type 1, 非扫荡)
+  SUM(CASE WHEN log.stagetype = 1 AND log.ismopup = 0 THEN 1 ELSE 0 END) AS '欢乐冒险总挑战次数',
+
+  -- [4] 欢乐冒险-当日-挑战总次数 (Type 1, 非扫荡, 今天)
+  SUM(CASE WHEN log.stagetype = 1 AND log.ismopup = 0 AND DATE(log.time_stamp) = CURDATE() THEN 1 ELSE 0 END) AS '欢乐冒险当日挑战总次数',
+
+  -- [5] 极限挑战-历史-挑战总次数 (Type 2, 非扫荡)
+  SUM(CASE WHEN log.stagetype = 2 AND log.ismopup = 0 THEN 1 ELSE 0 END) AS '极限挑战总挑战次数',
+
+  -- [6] 极限挑战-当日-挑战总次数 (Type 2, 非扫荡, 今天)
+  SUM(CASE WHEN log.stagetype = 2 AND log.ismopup = 0 AND DATE(log.time_stamp) = CURDATE() THEN 1 ELSE 0 END) AS '极限挑战当日挑战总次数',
+
+  -- [7] 极限挑战-历史-总扫荡次数 (扫荡)
+  SUM(CASE WHEN log.ismopup = 1 THEN 1 ELSE 0 END) AS '极限挑战历史总扫荡次数',
+
+  -- [8] 极限挑战-当日-总扫荡次数 (扫荡, 今天)
+  SUM(CASE WHEN log.ismopup = 1 AND DATE(log.time_stamp) = CURDATE() THEN 1 ELSE 0 END) AS '极限挑战当日总扫荡次数',
+
+  -- ==========================================
+  -- 4. 复杂详情字符串 (来自 LEFT JOIN 子查询)
+  -- ==========================================
+  
+  -- [9] 极限挑战当日扫荡掉落
+  IFNULL(t_drop.drop_info, '') AS '当日扫荡掉落物品ID:数量',
+  
+  -- [10] 当天各个关卡极限挑战-挑战次数
+  IFNULL(t_extreme.stage_info, '') AS '关卡极限挑战挑战次数',
+  
+  -- [11] 当天各个关卡欢乐冒险-挑战次数
+  IFNULL(t_happy.stage_info, '') AS '关卡欢乐冒险挑战次数'
+
+FROM
+  poli_island_log AS log
+
+-- 【关联1】玩家档案 (一对一)
+LEFT JOIN db_ro3_operation_log.SNAP_ROLE AS role 
+  ON log.uid = role.uid
+
+-- 【关联2】充值统计 (预先聚合，一对一)
+LEFT JOIN (
+  SELECT 
+    uid, 
+    SUM(amount) / 100 AS total_recharge
+  FROM db_ro3_sdk2.T_ORDER
+  WHERE status = 2 -- 只计算支付成功的
+  GROUP BY uid
+) AS pay ON log.uid = pay.uid
+
+-- 【关联3】当日掉落详情 (预先聚合)
+-- 注意：这里关联的是 2025-12-05 的道具表，如果是跑当天的请确保表名正确
+LEFT JOIN (
+    SELECT 
+        pl.uid, 
+        GROUP_CONCAT(CONCAT(il.itemid, ':', il.num) SEPARATOR ', ') AS drop_info
+    FROM poli_island_log pl
+    INNER JOIN db_ro3_operation_log.`item_log_2025-12-05` il ON pl.batchid = il.reason
+    WHERE pl.ismopup = 1 
+      AND DATE(pl.time_stamp) = CURDATE()
+    GROUP BY pl.uid
+) AS t_drop ON log.uid = t_drop.uid
+
+-- 【关联4】当日极限挑战关卡分布 (预先聚合)
+LEFT JOIN (
+    SELECT 
+        uid, 
+        GROUP_CONCAT(CONCAT(stageid, ':', cnt) ORDER BY stageid ASC SEPARATOR ',') AS stage_info
+    FROM (
+        SELECT uid, stageid, COUNT(*) AS cnt
+        FROM poli_island_log
+        WHERE stagetype = 2 AND ismopup = 0 AND DATE(time_stamp) = CURDATE()
+        GROUP BY uid, stageid
+    ) sub
+    GROUP BY uid
+) AS t_extreme ON log.uid = t_extreme.uid
+
+-- 【关联5】当日欢乐冒险关卡分布 (预先聚合)
+LEFT JOIN (
+    SELECT 
+        uid, 
+        GROUP_CONCAT(CONCAT(stageid, ':', cnt) ORDER BY stageid ASC SEPARATOR ',') AS stage_info
+    FROM (
+        SELECT uid, stageid, COUNT(*) AS cnt
+        FROM poli_island_log
+        WHERE stagetype = 1 AND ismopup = 0 AND DATE(time_stamp) = CURDATE()
+        GROUP BY uid, stageid
+    ) sub
+    GROUP BY uid
+) AS t_happy ON log.uid = t_happy.uid
+
+-- 按照 UID 分组，确保每个玩家只显示一行
+GROUP BY
+  log.uid, role.sid, role.nickname, role.viplv, pay.total_recharge;

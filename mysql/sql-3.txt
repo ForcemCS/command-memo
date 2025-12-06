@@ -1,0 +1,86 @@
+SELECT
+  -- 基础信息
+  t.uid,
+
+  -- 1. 欢乐冒险当前关卡id
+  MAX(CASE WHEN t.stagetype = 1 THEN t.stageid ELSE 0 END) AS '欢乐冒险当前关卡id',
+
+  -- 2. 极限挑战当前关卡id
+  MAX(CASE WHEN t.stagetype = 2 THEN t.stageid ELSE 0 END) AS '极限挑战当前关卡id',
+
+  -- 3. 欢乐冒险历史挑战总次数
+  SUM(CASE WHEN t.stagetype = 1 AND t.ismopup = 0 THEN 1 ELSE 0 END) AS '欢乐冒险总挑战次数',
+
+  -- 4. 欢乐冒险当日挑战总次数
+  SUM(CASE WHEN t.stagetype = 1 AND t.ismopup = 0 AND DATE(t.time_stamp) = CURDATE() THEN 1 ELSE 0 END) AS '欢乐冒险当日挑战总次数',
+
+  -- 5. 极限挑战历史挑战总次数
+  SUM(CASE WHEN t.stagetype = 2 AND t.ismopup = 0 THEN 1 ELSE 0 END) AS '极限挑战总挑战次数',
+
+  -- 6. 极限挑战当日挑战总次数
+  SUM(CASE WHEN t.stagetype = 2 AND t.ismopup = 0 AND DATE(t.time_stamp) = CURDATE() THEN 1 ELSE 0 END) AS '极限挑战当日挑战总次数',
+
+  -- 7. 极限挑战历史总扫荡次数
+  SUM(CASE WHEN t.ismopup = 1 THEN 1 ELSE 0 END) AS '极限挑战历史总扫荡次数',
+
+  -- 8. 极限挑战当日总扫荡次数
+  SUM(CASE WHEN t.ismopup = 1 AND DATE(t.time_stamp) = CURDATE() THEN 1 ELSE 0 END) AS '极限挑战当日总扫荡次数',
+
+  -- 9. 极限挑战当日扫荡掉落 (来自关联表 t_drop)
+  IFNULL(t_drop.drop_info, '') AS '当日扫荡掉落物品ID:数量',
+
+  -- 10. 当天各个关卡极限挑战-挑战次数 (来自关联表 t_extreme)
+  IFNULL(t_extreme.stage_info, '') AS '关卡极限挑战挑战次数',
+
+  -- 11. 当天各个关卡欢乐冒险-挑战次数 (来自关联表 t_happy)
+  IFNULL(t_happy.stage_info, '') AS '关卡欢乐冒险挑战次数'
+
+FROM
+  poli_island_log AS t
+
+-- 关联 9: 预先计算好的当日掉落数据
+LEFT JOIN (
+    SELECT 
+        log.uid, 
+        GROUP_CONCAT(CONCAT(il.itemid, ':', il.num) SEPARATOR ', ') AS drop_info
+    FROM poli_island_log log
+    INNER JOIN db_ro3_operation_log.`item_log_2025-12-05` il ON log.batchid = il.reason
+    WHERE log.ismopup = 1 
+      AND DATE(log.time_stamp) = CURDATE()
+    GROUP BY log.uid
+) AS t_drop ON t.uid = t_drop.uid
+
+-- 关联 10: 预先计算好的当日极限挑战关卡分布
+LEFT JOIN (
+    SELECT 
+        uid, 
+        GROUP_CONCAT(CONCAT(stageid, ':', cnt) ORDER BY stageid ASC SEPARATOR ',') AS stage_info
+    FROM (
+        SELECT uid, stageid, COUNT(*) AS cnt
+        FROM poli_island_log
+        WHERE stagetype = 2 
+          AND ismopup = 0 
+          AND DATE(time_stamp) = CURDATE()
+        GROUP BY uid, stageid
+    ) sub_ex
+    GROUP BY uid
+) AS t_extreme ON t.uid = t_extreme.uid
+
+-- 关联 11: 预先计算好的当日欢乐冒险关卡分布
+LEFT JOIN (
+    SELECT 
+        uid, 
+        GROUP_CONCAT(CONCAT(stageid, ':', cnt) ORDER BY stageid ASC SEPARATOR ',') AS stage_info
+    FROM (
+        SELECT uid, stageid, COUNT(*) AS cnt
+        FROM poli_island_log
+        WHERE stagetype = 1 
+          AND ismopup = 0 
+          AND DATE(time_stamp) = CURDATE()
+        GROUP BY uid, stageid
+    ) sub_ha
+    GROUP BY uid
+) AS t_happy ON t.uid = t_happy.uid
+
+GROUP BY
+  t.uid;

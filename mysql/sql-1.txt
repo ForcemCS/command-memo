@@ -1,0 +1,190 @@
+
+
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- ----------------------------
+-- Table structure for poli_island_log
+-- ----------------------------
+DROP TABLE IF EXISTS `poli_island_log`;
+CREATE TABLE `poli_island_log`  (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `uid` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `sid` int(11) NULL DEFAULT NULL,
+  `stagetype` int(11) NULL DEFAULT NULL COMMENT '1:冒险，2:挑战',
+  `stageid` int(11) NULL DEFAULT NULL COMMENT '关卡ID',
+  `iswin` int(11) NULL DEFAULT NULL COMMENT '1:赢，2:输',
+  `ismopup` int(11) NULL DEFAULT NULL COMMENT '0:不是扫荡, 1扫荡',
+  `mopupcount` int(11) NULL DEFAULT NULL COMMENT '如果是扫荡，扫荡了几次',
+  `batchid` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '批次唯一ID，关联itemlog :reason字段',
+  `time_stamp` datetime NULL DEFAULT NULL COMMENT '时间戳',
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `uid`(`uid`) USING BTREE,
+  INDEX `sid`(`sid`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 159 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+
+
+
+1.欢乐冒险当前关卡id
+
+
+SELECT
+    t.uid,
+    MAX(t.stageid) AS '欢乐冒险当前关卡id' 
+FROM
+    poli_island_log AS t
+WHERE
+    t.uid = '1000042510005' 
+    AND t.stagetype = 1      
+GROUP BY
+    t.uid; 
+	
+2.极限挑战当前关卡
+
+
+SELECT
+    t.uid,
+    MAX(t.stageid) AS '极限挑战当前关卡id' 
+FROM
+    poli_island_log AS t
+WHERE
+    t.uid = '1000042510005' 
+    AND t.stagetype = 2       
+GROUP BY
+    t.uid; 
+	
+3. 	欢乐冒险历史挑战总次数
+SELECT
+    COUNT(id) AS '欢乐冒险总挑战次数' 
+FROM
+    poli_island_log
+WHERE
+    uid = '1000042510005'
+    AND ismopup = 0	
+    AND stagetype = 1;  
+	
+4. 	欢乐冒险当日挑战总次数
+
+SELECT
+    COUNT(id) AS '	欢乐冒险当日挑战总次数'
+FROM
+    poli_island_log
+WHERE
+    uid = '1000042510005'
+    AND ismopup = 0		
+    AND stagetype = 1             
+    -- 新增条件：时间戳在今天
+    AND DATE(time_stamp) = CURDATE();
+	
+	
+	
+5. 	极限挑战历史挑战总次数
+SELECT
+    COUNT(id) AS '极限挑战总挑战次数' 
+FROM
+    poli_island_log
+WHERE
+    uid = '1000042510005'
+    AND ismopup = 0	
+    AND stagetype = 2;      
+	
+	
+6. 极限挑战当日挑战总次数
+
+SELECT
+    COUNT(id) AS '极限挑战当日挑战总次数'
+FROM
+    poli_island_log
+WHERE
+    uid = '1000042510005'   
+    AND ismopup = 0		
+    AND stagetype = 1             
+    -- 新增条件：时间戳在今天
+    AND DATE(time_stamp) = CURDATE();
+
+7. 	极限挑战历史总扫荡次数
+SELECT
+    COUNT(id) AS '极限挑战历史总扫荡次数' 
+FROM
+    poli_island_log
+WHERE
+    uid = '1000042510005' 	
+    AND ismopup = 1  ; 	
+
+
+8. 极限挑战当日总扫荡次数
+
+
+SELECT
+    COUNT(id) AS '极限挑战当日总扫荡次数'
+FROM
+    poli_island_log
+WHERE
+    uid = '1000042510005'       
+    AND ismopup = 1             
+    AND DATE(time_stamp) = CURDATE();
+	
+	
+9. 极限挑战当日扫荡掉落
+
+
+SELECT
+    GROUP_CONCAT(itemlog.itemid, ':', itemlog.num SEPARATOR ', ') AS '当日扫荡掉落物品ID:数量'
+FROM
+    poli_island_log AS log
+INNER JOIN
+    -- 使用下划线版本的表名
+    db_ro3_operation_log.`item_log_2025-12-05` AS itemlog 
+    ON log.batchid = itemlog.reason
+WHERE
+    log.uid = '1000042510005'
+    AND log.ismopup = 1
+    AND DATE(log.time_stamp) = CURDATE()
+	
+	
+
+
+10.当天各个关卡极限挑战-挑战次数
+
+SELECT 
+    GROUP_CONCAT(
+        CONCAT(stageid, ':', cnt)
+        ORDER BY stageid ASC 
+        SEPARATOR ','
+    ) AS 关卡极限挑战挑战次数
+FROM (
+    SELECT 
+        stageid,
+        COUNT(*) AS cnt
+    FROM poli_island_log
+    WHERE uid = '1000042510005'   -- 指定玩家
+      AND stagetype = 2           -- 极限挑战
+      AND ismopup = 0             -- 不是扫荡
+      AND DATE(time_stamp) = CURDATE()   -- 当天
+    GROUP BY stageid
+) t;
+
+
+
+11.当天各个关卡欢乐冒险-挑战次数
+
+SELECT 
+    GROUP_CONCAT(
+        CONCAT(stageid, ':', cnt)
+        ORDER BY stageid ASC 
+        SEPARATOR ','
+    ) AS 关卡欢乐冒险挑战次数
+FROM (
+    SELECT 
+        stageid,
+        COUNT(*) AS cnt
+    FROM poli_island_log
+    WHERE uid = '1000042510005'   -- 指定玩家
+      AND stagetype = 1           -- 极限挑战
+      AND ismopup = 0             -- 不是扫荡
+      AND DATE(time_stamp) = CURDATE()   -- 当天
+    GROUP BY stageid
+) t;
