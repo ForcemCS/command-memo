@@ -1,0 +1,59 @@
+services:
+  nats:
+    image: xxxx/nats:2.11-alpine3.22
+    profiles: ["base"]
+
+  mysql:
+    image: xxxx/mariadb:10.2
+    environment:
+      MYSQL_ROOT_PASSWORD: com.012
+    ports:
+      - "${MYSQL_PORT}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    profiles: ["base"]
+
+  redis:
+    image: xxxx/redis:6.2-alpine
+    ports:
+      - "${REDIS_PORT}:6379"
+    volumes:
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+      - redis_data:/data
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    profiles: ["base"]
+
+  caddy:
+    image: xxxx/caddy:2.10
+    ports:
+      - "${HTTP_PORT}:80"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile
+    profiles: ["base"]
+
+  center:
+    image: ${MICRO_IMAGE}
+    volumes:
+      - ./center/config.yaml:/workdir/config.yaml
+    profiles: ["base"]
+
+  admin:
+    image: xxxx/alpine:3.22
+    volumes:
+      - .:/workdir
+    working_dir: /workdir/admin
+    entrypoint: ["./admin"]
+    profiles: ["admin"]
+
+  merge:
+    image: mysql:5.7
+    volumes:
+      - ./merges:/merges
+    working_dir: /merges
+    profiles: ["merge"]
+    command: sleep 10000000000000
+ 
+
+volumes:
+  mysql_data:
+  redis_data:
