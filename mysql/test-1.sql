@@ -31,3 +31,32 @@ INNER JOIN (
 ```
 SELECT uid, sid, max(stageid) as max_stageid FROM poli_island_log WHERE time_stamp <= "2025-12-08 00:00:00"  and  stagetype = 1  and iswin =  1  GROUP BY uid,sid ORDER BY sid, max_stageid DESC
 ```
+pli
+```
+SELECT
+    t.uid,
+    t.sid,
+    t.stageid AS max_stageid,
+    t.time_stamp
+FROM poli_island_log t
+JOIN (
+    SELECT
+        uid,
+        sid,
+        MAX(stageid) AS max_stageid
+    FROM poli_island_log
+    WHERE time_stamp <= '2025-12-08 00:00:00'
+      AND stagetype = 1
+      AND iswin = 1
+    GROUP BY uid, sid
+) m
+ON  t.uid = m.uid
+AND t.sid = m.sid
+AND t.stageid = m.max_stageid
+WHERE t.time_stamp <= '2025-12-08 00:00:00'
+  AND t.stagetype = 1
+  AND t.iswin = 1
+ORDER BY
+    t.sid,
+    t.stageid DESC;
+```
