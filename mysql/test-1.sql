@@ -28,3 +28,6 @@ INNER JOIN (
         stagetype
 ) latest ON log.id = latest.max_id;
 ```
+```
+SELECT uid, sid, max(stageid) as max_stageid FROM poli_island_log WHERE time_stamp <= "2025-12-08 00:00:00"  and  stagetype = 1  and iswin =  1  GROUP BY uid,sid ORDER BY sid, max_stageid DESC
+```
