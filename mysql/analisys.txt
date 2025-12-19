@@ -1,0 +1,123 @@
+```
+SELECT
+    t.uid,
+    role.sid,
+    role.nickname,
+    role.viplv,
+    IFNULL(pay.total_recharge, 0) AS total_recharge_amount,
+
+    IFNULL(stats.max_stage_happy, 0)    AS 欢乐冒险当前关卡id,
+    IFNULL(stats.max_stage_extreme, 0)  AS 极限挑战当前关卡id,
+    IFNULL(stats.total_cnt_happy, 0)    AS 欢乐冒险总挑战次数,
+    IFNULL(stats.today_cnt_happy, 0)    AS 欢乐冒险当日挑战总次数,
+    IFNULL(stats.total_cnt_extreme, 0)  AS 极限挑战总挑战次数,
+    IFNULL(stats.today_cnt_extreme, 0)  AS 极限挑战当日挑战总次数,
+    IFNULL(stats.total_mopup, 0)        AS 极限挑战历史总扫荡次数,
+    IFNULL(stats.today_mopup, 0)        AS 极限挑战当日总扫荡次数,
+
+    IFNULL(t_drop.drop_info, '')        AS 当日扫荡掉落物品,
+    IFNULL(t_extreme.stage_info, '')    AS 关卡极限挑战挑战次数,
+    IFNULL(t_happy.stage_info, '')      AS 关卡欢乐冒险挑战次数,
+
+    IFNULL(role.power, 0)               AS power
+
+FROM
+(
+    /* 当日活跃用户 */
+    SELECT DISTINCT uid
+    FROM db_ro3_operation_log.poli_island_log
+    WHERE time_stamp BETWEEN '2025-12-17 00:00:00'
+                          AND '2025-12-17 23:59:59'
+) t
+
+/* 角色快照 */
+LEFT JOIN db_ro3_operation_log.SNAP_ROLE role
+       ON t.uid = role.uid
+
+/* 充值汇总 */
+LEFT JOIN (
+    SELECT uid, SUM(amount) / 100 AS total_recharge
+    FROM db_ro3_sdk2.T_ORDER
+    WHERE status = 2
+    GROUP BY uid
+) pay ON t.uid = pay.uid
+
+/* 关卡 & 扫荡统计 */
+LEFT JOIN (
+    SELECT 
+        log.uid,
+
+        MAX(CASE WHEN log.stagetype = 1 THEN log.stageid ELSE 0 END) AS max_stage_happy,
+        MAX(CASE WHEN log.stagetype = 2 THEN log.stageid ELSE 0 END) AS max_stage_extreme,
+
+        SUM(CASE WHEN log.stagetype = 1 AND log.ismopup = 0 THEN 1 ELSE 0 END) AS total_cnt_happy,
+        SUM(CASE WHEN log.stagetype = 1 AND log.ismopup = 0
+                  AND log.time_stamp BETWEEN '2025-12-17 00:00:00'
+                                          AND '2025-12-17 23:59:59'
+             THEN 1 ELSE 0 END) AS today_cnt_happy,
+
+        SUM(CASE WHEN log.stagetype = 2 AND log.ismopup = 0 THEN 1 ELSE 0 END) AS total_cnt_extreme,
+        SUM(CASE WHEN log.stagetype = 2 AND log.ismopup = 0
+                  AND log.time_stamp BETWEEN '2025-12-17 00:00:00'
+                                          AND '2025-12-17 23:59:59'
+             THEN 1 ELSE 0 END) AS today_cnt_extreme,
+
+        SUM(CASE WHEN log.ismopup = 1 THEN log.mopupcount ELSE 0 END) AS total_mopup,
+        SUM(CASE WHEN log.ismopup = 1
+                  AND log.time_stamp BETWEEN '2025-12-17 00:00:00'
+                                          AND '2025-12-17 23:59:59'
+             THEN log.mopupcount ELSE 0 END) AS today_mopup
+
+    FROM db_ro3_operation_log.poli_island_log log
+    GROUP BY log.uid
+) stats ON t.uid = stats.uid
+
+/* 当日扫荡掉落 */
+LEFT JOIN (
+    SELECT 
+        pl.uid,
+        GROUP_CONCAT(CONCAT(il.itemid, ':', il.num) SEPARATOR ',') AS drop_info
+    FROM db_ro3_operation_log.poli_island_log pl
+    JOIN db_ro3_operation_log.item_log_2025-12-17 il
+      ON pl.batchid = il.reason
+    WHERE pl.ismopup = 1
+      AND pl.time_stamp BETWEEN '2025-12-17 00:00:00'
+                              AND '2025-12-17 23:59:59'
+    GROUP BY pl.uid
+) t_drop ON t.uid = t_drop.uid
+
+/* 欢乐冒险：当日各关卡挑战次数 */
+LEFT JOIN (
+    SELECT uid,
+           GROUP_CONCAT(CONCAT(stageid, ':', cnt)
+                        ORDER BY stageid ASC SEPARATOR ',') AS stage_info
+    FROM (
+        SELECT uid, stageid, COUNT(*) cnt
+        FROM db_ro3_operation_log.poli_island_log
+        WHERE stagetype = 1
+          AND ismopup = 0
+          AND time_stamp BETWEEN '2025-12-17 00:00:00'
+                              AND '2025-12-17 23:59:59'
+        GROUP BY uid, stageid
+    ) x
+    GROUP BY uid
+) t_happy ON t.uid = t_happy.uid
+
+/* 极限挑战：当日各关卡挑战次数 */
+LEFT JOIN (
+    SELECT uid,
+           GROUP_CONCAT(CONCAT(stageid, ':', cnt)
+                        ORDER BY stageid ASC SEPARATOR ',') AS stage_info
+    FROM (
+        SELECT uid, stageid, COUNT(*) cnt
+        FROM db_ro3_operation_log.poli_island_log
+        WHERE stagetype = 2
+          AND ismopup = 0
+          AND time_stamp BETWEEN '2025-12-17 00:00:00'
+                              AND '2025-12-17 23:59:59'
+        GROUP BY uid, stageid
+    ) y
+    GROUP BY uid
+) t_extreme ON t.uid = t_extreme.uid;
+
+```
