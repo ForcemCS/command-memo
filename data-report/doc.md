@@ -454,3 +454,35 @@ ORDER BY
     month;
 
 ```
+
+### 交易行数据
+```
+SELECT
+  uid as 买家UID,
+  item_id as 道具ID,
+  item_num as 数量,
+  seller_id as 卖家ID,
+  time_stamp as 交易时间
+FROM LOG_TRADE_RECORD
+WHERE trade_status = 1
+  AND (uid = '1074338940139' OR seller_id = '1074338940139')
+  AND time_stamp >= CURDATE() - INTERVAL 2 DAY
+  AND time_stamp <= NOW()
+ORDER BY time_stamp DESC;
+
+
+
+
+SELECT
+  uid as 买家UID,
+  item_id as 道具ID,
+  item_num as 数量,
+  seller_id as 卖家ID,
+  time_stamp as 交易时间
+FROM LOG_TRADE_RECORD
+WHERE trade_status = 1
+  AND (uid = '1078942040141' OR seller_id = '1078942040141')
+  AND time_stamp >= DATE_SUB(CURDATE(), INTERVAL 2 DAY)
+  AND time_stamp < DATE_ADD(CURDATE(), INTERVAL 1 DAY)
+ORDER BY time_stamp DESC;
+```
