@@ -486,3 +486,27 @@ WHERE trade_status = 1
   AND time_stamp < DATE_ADD(CURDATE(), INTERVAL 1 DAY)
 ORDER BY time_stamp DESC;
 ```
+### 基于某个服的滚服玩家
+```
+SELECT 
+    t1.account,
+    t2.server_id AS other_server_id
+FROM T_LOGIN_INFO t1
+JOIN T_LOGIN_INFO t2 
+    ON t1.account = t2.account
+   AND t2.server_id <> 40218
+WHERE t1.server_id = 40218
+ORDER BY t1.account, t2.server_id;
+
+
+SELECT 
+    t1.account,
+    GROUP_CONCAT(DISTINCT t2.server_id ORDER BY t2.server_id) AS other_servers
+FROM T_LOGIN_INFO t1
+JOIN T_LOGIN_INFO t2 
+    ON t1.account = t2.account
+   AND t2.server_id <> 40218
+WHERE t1.server_id = 40218
+GROUP BY t1.account;
+
+```
