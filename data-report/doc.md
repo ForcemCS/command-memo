@@ -510,3 +510,30 @@ WHERE t1.server_id = 40218
 GROUP BY t1.account;
 
 ```
+###滚服充值
+```
+SELECT 
+    l.account, 
+    l.server_id, 
+    l.uid, 
+    IFNULL(o.total_amount, 0) AS total_amount
+FROM T_LOGIN_INFO l
+-- 第一步：通过 LEFT JOIN 关联充值统计子查询
+LEFT JOIN (
+    SELECT 
+        uid, 
+        ROUND(SUM(amount / 100), 2) AS total_amount
+    FROM T_ORDER
+    WHERE status = 2
+    GROUP BY uid
+) o ON l.uid = o.uid
+-- 第二步：过滤出属于“滚服”行为的账号
+WHERE l.account IN (
+    SELECT DISTINCT t1.account
+    FROM T_LOGIN_INFO t1
+    INNER JOIN T_LOGIN_INFO t2 ON t1.account = t2.account
+    WHERE t1.server_id = 40218   -- 在目标新服有角色
+      AND t2.server_id <> 40218  -- 且在其他服也有角色
+)
+ORDER BY l.account, l.server_id;
+```
