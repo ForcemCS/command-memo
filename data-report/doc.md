@@ -588,3 +588,31 @@ ORDER BY
     sid ASC, 
     stage_id ASC;
 ```
+###开服前两天mvpboss
+```
+SELECT 
+    DATE(L.time_stamp) AS kill_date,    -- 击杀日期
+    L.sid,                             -- 服务器ID
+    S.name AS server_name,             -- 服务器名称
+    L.stage_id AS boss_id,             -- Boss ID
+    COUNT(*) AS kill_count             -- 击杀次数统计
+FROM 
+    LOG_MVPBOSS_KILL_RECORD L
+INNER JOIN 
+    db_ro3_server.T_SERVER S ON L.sid = S.id
+WHERE 
+    S.site_id = 4                     -- 筛选大区4
+    -- 核心逻辑：
+    -- 1. 击杀时间 >= 开服当天的 00:00:00
+    AND L.time_stamp >= DATE(S.open_time)
+    -- 2. 击杀时间 < 开服后第 3 天的 00:00:00 (即包含开服当天和次日两个完整自然日)
+    AND L.time_stamp < DATE_ADD(DATE(S.open_time), INTERVAL 2 DAY)
+GROUP BY 
+    DATE(L.time_stamp), 
+    L.sid, 
+    L.stage_id
+ORDER BY 
+    L.sid ASC, 
+    kill_date ASC, 
+    kill_count DESC;
+```
