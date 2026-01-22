@@ -568,3 +568,23 @@ WHERE
     t1.sid = 40218  -- t1 表只查 40218
     AND t2.sid = 40219; -- t2 表只查 40219
 ```
+### mvpboss简单统计
+```
+SELECT 
+    DATE(time_stamp) AS kill_date,    -- 提取日期
+    sid,                             -- 服务器ID
+    stage_id AS boss_id,             -- 关卡ID（Boss ID）
+    COUNT(*) AS kill_count           -- 击杀次数统计
+FROM 
+    LOG_MVPBOSS_KILL_RECORD
+WHERE 
+    sid IN (40218, 40219)            -- 过滤指定的服务器
+GROUP BY 
+    DATE(time_stamp), 
+    sid, 
+    stage_id
+ORDER BY 
+    kill_date DESC,                  -- 按日期降序排列（近期在前）
+    sid ASC, 
+    stage_id ASC;
+```
