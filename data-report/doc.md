@@ -537,3 +537,34 @@ WHERE l.account IN (
 )
 ORDER BY l.account, l.server_id;
 ```
+
+### 同时在两个服的玩家
+```
+SELECT 
+    -- 1. 展示推导出的公共账号 (去掉uid后5位)
+    LEFT(t1.uid, CHAR_LENGTH(t1.uid) - 5) AS common_account,
+    
+    -- 2. 展示 40218 服的详细信息 (为了区分，给字段加了别名后缀)
+    t1.uid AS uid_40218,
+    t1.nickname AS nickname_40218,
+    t1.viplv AS viplv_40218,
+    t1.power AS power_40218,
+    t1.last_login_time AS last_login_40218,
+
+
+    -- 3. 展示 40219 服的详细信息
+    t2.uid AS uid_40219,
+    t2.nickname AS nickname_40219,
+    t2.viplv AS viplv_40219,
+    t2.power AS power_40219,
+    t2.last_login_time AS last_login_40219
+
+    
+FROM SNAP_ROLE t1
+JOIN SNAP_ROLE t2 
+    -- 核心逻辑：两个表的 uid 去掉后5位必须相同
+    ON LEFT(t1.uid, CHAR_LENGTH(t1.uid) - 5) = LEFT(t2.uid, CHAR_LENGTH(t2.uid) - 5)
+WHERE 
+    t1.sid = 40218  -- t1 表只查 40218
+    AND t2.sid = 40219; -- t2 表只查 40219
+```
