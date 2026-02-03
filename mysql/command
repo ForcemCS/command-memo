@@ -1,0 +1,9 @@
+ubuntu@game-server:~$ cat ~/.my.cnf
+[client]
+host=x
+port=30016
+user=root
+password=x
+
+
+mysql -e "UPDATE db_ro3_server.xxx SET tag = '202601291818-365' WHERE id IN (...);"
