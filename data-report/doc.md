@@ -616,3 +616,17 @@ ORDER BY
     kill_date ASC, 
     kill_count DESC;
 ```
+###日活跃
+```
+SELECT 
+    sid, 
+    COUNT(DISTINCT uid) AS daily_active_users
+FROM 
+    KPI_ACTIVE
+WHERE 
+    date = '2026-02-03'
+GROUP BY 
+    sid
+ORDER BY 
+    sid ASC;
+```
