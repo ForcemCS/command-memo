@@ -588,7 +588,7 @@ ORDER BY
     sid ASC, 
     stage_id ASC;
 ```
-###开服前两天mvpboss
+### 开服前两天mvpboss
 ```
 SELECT 
     DATE(L.time_stamp) AS kill_date,    -- 击杀日期
@@ -616,7 +616,7 @@ ORDER BY
     kill_date ASC, 
     kill_count DESC;
 ```
-###日活跃
+### 日活跃
 ```
 SELECT 
     sid, 
@@ -629,4 +629,47 @@ GROUP BY
     sid
 ORDER BY 
     sid ASC;
+```
+```
+SELECT DISTINCT
+    sid,
+    uid
+FROM KPI_ACTIVE
+WHERE date = '2026-02-03'
+ORDER BY sid, uid;
+
+```
+```
+SELECT 
+    sid,
+    GROUP_CONCAT(DISTINCT uid ORDER BY uid SEPARATOR ',') AS uids
+FROM KPI_ACTIVE
+WHERE date = '2026-02-03'
+GROUP BY sid
+ORDER BY sid ASC;
+
+```
+### 达到某个等级的活跃
+```
+SELECT DISTINCT
+    a.sid,
+    a.uid
+FROM db_ro3_sdk_new.KPI_ACTIVE a
+INNER JOIN db_ro3_operation_log.SNAP_ROLE b 
+    ON a.uid = b.uid
+WHERE a.date = '2026-02-03' 
+  AND b.max_base_lv > 77
+ORDER BY a.sid, a.uid;
+```
+```
+SELECT
+    a.sid,
+    COUNT(DISTINCT a.uid) AS high_lv_user_count
+FROM db_ro3_sdk_new.KPI_ACTIVE a
+INNER JOIN db_ro3_operation_log.SNAP_ROLE b 
+    ON a.uid = b.uid
+WHERE a.date = '2026-02-03' 
+  AND b.max_base_lv > 77
+GROUP BY a.sid
+ORDER BY a.sid;
 ```
