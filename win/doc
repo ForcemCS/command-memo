@@ -1,0 +1,4 @@
+## powershell脚本运行权限
+```
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
