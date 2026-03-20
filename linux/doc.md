@@ -43,3 +43,7 @@ sudo执行整个命令
 sudo bash -c "nohup ./nats-server > nats.log 2>&1 &"
 pgrep -af nats
 ```
+重启容器
+```
+docker ps -a -q  -f  status=exited  | xargs -r doccker restart 
+```
