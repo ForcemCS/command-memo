@@ -38,3 +38,8 @@ docker inspect -f '{{range .NetworkSettings.Networks}}{{.NetworkID}}{{end}}' 849
 ```
 find / -type f -mmin -10 -size +500M
 ```
+sudo执行整个命令
+```
+sudo bash -c "nohup ./nats-server > nats.log 2>&1 &"
+pgrep -af nats
+```
