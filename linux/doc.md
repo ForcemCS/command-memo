@@ -47,3 +47,7 @@ pgrep -af nats
 ```
 docker ps -a -q  -f  status=exited  | xargs -r doccker restart 
 ```
+删除当前目录下的特定文件
+```
+find . -mindepth 1   ! -name '.gocache'   ! -name '.gomodcache'   -exec rm -rf {} +
+```
