@@ -697,4 +697,26 @@ LEFT JOIN db_ro3_sdk2.T_ORDER o
     AND o.status = 2 -- 注意：过滤条件必须放在 ON 后面，否则 LEFT JOIN 会失效变成 INNER JOIN
 GROUP BY 
     base.new_account;
+
+SELECT 
+    base.new_account,
+    -- 使用 IFNULL 确保如果没有找到角色记录，等级显示为 0
+    IFNULL(r.max_base_lv, 0) AS max_base_lv
+FROM (
+    -- 基础账号筛选逻辑
+    SELECT 
+        t1.account,
+        CONCAT(t1.account, '40222') AS new_account
+    FROM T_LOGIN_INFO t1
+    JOIN T_LOGIN_INFO t2 
+        ON t1.account = t2.account
+        AND t2.server_id <> 40222
+    WHERE t1.server_id = 40222
+    GROUP BY t1.account
+) AS base
+-- 关联角色快照表
+LEFT JOIN db_ro3_operation_log.SNAP_ROLE r 
+    ON r.uid = base.new_account
+ORDER BY 
+    max_base_lv DESC;
 ```
