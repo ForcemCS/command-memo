@@ -673,3 +673,28 @@ WHERE a.date = '2026-02-03'
 GROUP BY a.sid
 ORDER BY a.sid;
 ```
+### 滚服玩家充值
+```
+SELECT 
+    base.new_account,
+    -- 如果 SUM 结果为 NULL（代表没查到充值记录），则显示为 0.00
+    IFNULL(ROUND(SUM(o.amount / 100), 2), 0.00) AS `充值金额`
+FROM (
+    -- 筛选符合条件的账号基数
+    SELECT 
+        t1.account,
+        CONCAT(t1.account, '40222') AS new_account
+    FROM T_LOGIN_INFO t1
+    JOIN T_LOGIN_INFO t2 
+        ON t1.account = t2.account
+        AND t2.server_id <> 40222
+    WHERE t1.server_id = 40222
+    GROUP BY t1.account
+) AS base
+-- 使用 LEFT JOIN 保证左表（玩家账号）全部显示
+LEFT JOIN db_ro3_sdk2.T_ORDER o 
+    ON o.uid = base.new_account 
+    AND o.status = 2 -- 注意：过滤条件必须放在 ON 后面，否则 LEFT JOIN 会失效变成 INNER JOIN
+GROUP BY 
+    base.new_account;
+```
