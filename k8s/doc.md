@@ -76,3 +76,9 @@ kubectl get nodes -o go-template='{{range .items}}{{.metadata.name}}{{"\n"}}{{en
 ```
 kubectl get secret xbot-tls -o jsonpath='{.data.tls\.crt}' | base64 -d | openssl x509 -noout -text
 ```
+### 更新secret
+```
+kubectl -n workflow create secret generic datacenter-secret-token \
+  --from-literal=token='你的新TOKEN明文' \
+  --dry-run=client -o yaml | kubectl apply -f -
+```
