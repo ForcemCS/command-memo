@@ -720,3 +720,14 @@ LEFT JOIN db_ro3_operation_log.SNAP_ROLE r
 ORDER BY 
     max_base_lv DESC;
 ```
+### 玩家打造次数
+```
+SELECT * FROM (
+SELECT sid, uid, COUNT(*) as count, DATE(time_stamp) as date    FROM `item_log_2026-04-22`  WHERE  sid = 40222 AND  `where` = "CMD_BuildEquip_REQ" AND change_type = 2  GROUP BY sid, uid , DATE(time_stamp) 
+
+UNION ALL
+SELECT sid, uid, COUNT(*) as count, DATE(time_stamp) as date    FROM `item_log_2026-04-23`  WHERE  sid = 40222 AND  `where` = "CMD_BuildEquip_REQ" AND change_type = 2  GROUP BY sid, uid , DATE(time_stamp) 
+
+) as total_result
+ORDER BY uid ASC, date ASC; -- 先按 UID 排序，同一 UID 内按日期先后排序
+```
