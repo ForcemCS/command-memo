@@ -51,3 +51,7 @@ docker ps -a -q  -f  status=exited  | xargs -r doccker restart
 ```
 find . -mindepth 1   ! -name '.gocache'   ! -name '.gomodcache'   -exec rm -rf {} +
 ```
+获取ip地址
+```
+ip -4 addr show ens33 | awk '/inet/ {print $2}' |cut -d/ -f1
+```
