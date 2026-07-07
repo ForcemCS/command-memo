@@ -797,3 +797,33 @@ WHERE o.server_id = 40223
   AND o.product_id = 270020090
   AND o.status = 2;
 ```
+### 首充
+```
+SELECT
+    o.id AS order_id,
+    o.uid,
+    o.server_id,
+    o.product_id,
+    o.delivery_time,
+
+    e.before_level,
+    e.after_level,
+    e.time_stamp AS level_log_time
+
+FROM db_ro3_sdk2.T_ORDER o
+
+LEFT JOIN db_ro3_operation_log.exp_log e
+    ON e.id = (
+        SELECT el.id
+        FROM db_ro3_operation_log.exp_log el
+        WHERE el.uid = o.uid
+          AND el.sid = o.server_id
+          AND el.time_stamp <= o.delivery_time
+        ORDER BY el.time_stamp DESC, el.id DESC
+        LIMIT 1
+    )
+
+WHERE o.server_id = 40223
+  AND o.product_id = 270020090
+  AND o.status = 2;
+```
