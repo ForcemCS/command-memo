@@ -731,3 +731,69 @@ SELECT sid, uid, COUNT(*) as count, DATE(time_stamp) as date    FROM `item_log_2
 ) as total_result
 ORDER BY uid ASC, date ASC; -- 先按 UID 排序，同一 UID 内按日期先后排序
 ```
+### 首充时的主线任务之类的
+```
+SELECT
+    o.id AS order_id,
+    o.uid,
+    o.server_id,
+    o.product_id,
+    o.delivery_time,
+
+    -- 充值时等级
+    e.after_level AS recharge_level,
+    e.time_stamp AS level_time,
+
+    -- 充值前最近主线任务
+    t.task_id AS last_main_task_id,
+    t.time_stamp AS task_time,
+
+    -- 充值前最近波利岛通关
+    p.stageid AS last_poli_stage_id,
+    p.time_stamp AS poli_time
+
+FROM db_ro3_sdk2.T_ORDER o
+
+-- 最近Base等级
+LEFT JOIN db_ro3_operation_log.exp_log e
+    ON e.id = (
+        SELECT el.id
+        FROM db_ro3_operation_log.exp_log el
+        WHERE el.uid = o.uid
+          AND el.sid = o.server_id
+          AND el.exp_type = 1
+          AND el.time_stamp <= o.delivery_time
+        ORDER BY el.time_stamp DESC, el.id DESC
+        LIMIT 1
+    )
+
+-- 最近主线任务
+LEFT JOIN db_ro3_operation_log.receive_task_log t
+    ON t.id = (
+        SELECT tl.id
+        FROM db_ro3_operation_log.receive_task_log tl
+        WHERE tl.uid = o.uid
+          AND tl.sid = o.server_id
+          AND tl.task_type = 1
+          AND tl.time_stamp <= o.delivery_time
+        ORDER BY tl.time_stamp DESC, tl.id DESC
+        LIMIT 1
+    )
+
+-- 最近波利岛通关
+LEFT JOIN db_ro3_operation_log.poli_island_log p
+    ON p.id = (
+        SELECT pl.id
+        FROM db_ro3_operation_log.poli_island_log pl
+        WHERE pl.uid = o.uid
+          AND pl.sid = o.server_id
+          AND pl.iswin = 1
+          AND pl.time_stamp <= o.delivery_time
+        ORDER BY pl.time_stamp DESC, pl.id DESC
+        LIMIT 1
+    )
+
+WHERE o.server_id = 40223
+  AND o.product_id = 270020090
+  AND o.status = 2;
+```
