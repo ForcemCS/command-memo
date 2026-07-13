@@ -82,3 +82,10 @@ kubectl -n workflow create secret generic datacenter-secret-token \
   --from-literal=token='你的新TOKEN明文' \
   --dry-run=client -o yaml | kubectl apply -f -
 ```
+### secret
+```
+kubectl create secret generic registry-secret \
+  --from-file=.dockerconfigjson=/root/.docker/config.json \
+  --type=kubernetes.io/dockerconfigjson \
+  -n game
+```
