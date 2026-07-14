@@ -827,3 +827,51 @@ WHERE o.server_id = 40223
   AND o.product_id = 270020090
   AND o.status = 2;
 ```
+### 玩家精炼
+```
+SELECT
+    sid,
+    uid,
+    CASE
+        WHEN sid = 40223 THEN '2026-07-13'
+        WHEN sid = 40222 THEN '2026-05-01'
+        WHEN sid = 40221 THEN '2026-05-01'
+        WHEN sid = 40220 THEN '2026-02-13'
+    END AS stat_date,
+    COUNT(*) AS refine_count
+FROM equip_attr_modify_log
+WHERE modify_type = 2
+  AND (
+        (
+            sid = 40223
+            AND time_stamp >= '2026-07-13 00:00:00'
+            AND time_stamp <  '2026-07-14 00:00:00'
+        )
+        OR
+        (
+            sid = 40222
+            AND time_stamp >= '2026-05-01 00:00:00'
+            AND time_stamp <  '2026-05-02 00:00:00'
+        )
+        OR
+        (
+            sid = 40221
+            AND time_stamp >= '2026-05-01 00:00:00'
+            AND time_stamp <  '2026-05-02 00:00:00'
+        )
+        OR
+        (
+            sid = 40220
+            AND time_stamp >= '2026-02-13 00:00:00'
+            AND time_stamp <  '2026-02-14 00:00:00'
+        )
+      )
+GROUP BY
+    sid,
+    uid,
+    stat_date
+ORDER BY
+    sid DESC,
+    refine_count DESC,
+    uid ASC;
+```
