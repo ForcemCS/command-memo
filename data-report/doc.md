@@ -883,7 +883,8 @@ SELECT
     l.uid, 
     IFNULL(o.total_amount, 0) AS total_amount,
     r.max_base_lv,
-    r.last_login_time
+    r.last_login_time,
+    r.create_stamp AS create_time
 FROM db_ro3_sdk2.T_LOGIN_INFO AS l
 
 LEFT JOIN (
@@ -905,10 +906,10 @@ WHERE l.account IN (
     FROM db_ro3_sdk2.T_LOGIN_INFO AS t1
     INNER JOIN db_ro3_sdk2.T_LOGIN_INFO AS t2
         ON t1.account = t2.account
-    WHERE t1.server_id = 40218
+    WHERE t1.server_id = 40224
       AND t2.server_id IN (40222, 40223)
 )
-AND l.server_id IN (40218, 40222, 40223)
+AND l.server_id IN (40224, 40222, 40223)
 
 ORDER BY 
     l.account ASC,
