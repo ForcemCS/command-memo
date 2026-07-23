@@ -875,3 +875,42 @@ ORDER BY
     refine_count DESC,
     uid ASC;
 ```
+### 基于某一个服的滚服信息
+```
+SELECT 
+    l.account, 
+    l.server_id, 
+    l.uid, 
+    IFNULL(o.total_amount, 0) AS total_amount,
+    r.max_base_lv,
+    r.last_login_time
+FROM db_ro3_sdk2.T_LOGIN_INFO AS l
+
+LEFT JOIN (
+    SELECT 
+        uid, 
+        ROUND(SUM(amount / 100), 2) AS total_amount
+    FROM db_ro3_sdk2.T_ORDER
+    WHERE status = 2
+    GROUP BY uid
+) AS o
+    ON l.uid = o.uid
+
+LEFT JOIN db_ro3_operation_log.SNAP_ROLE AS r
+    ON l.uid = r.uid
+   AND l.server_id = r.sid
+
+WHERE l.account IN (
+    SELECT DISTINCT t1.account
+    FROM db_ro3_sdk2.T_LOGIN_INFO AS t1
+    INNER JOIN db_ro3_sdk2.T_LOGIN_INFO AS t2
+        ON t1.account = t2.account
+    WHERE t1.server_id = 40218
+      AND t2.server_id IN (40222, 40223)
+)
+AND l.server_id IN (40218, 40222, 40223)
+
+ORDER BY 
+    l.account ASC,
+    l.server_id ASC;
+```
