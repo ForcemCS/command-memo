@@ -915,3 +915,32 @@ ORDER BY
     l.account ASC,
     l.server_id ASC;
 ```
+### 玩家在某一天的最后等级
+```
+SELECT
+    l.uid,
+    l.sid,
+    l.after_lv,
+    l.time_stamp
+FROM level_change_log AS l
+WHERE l.sid = 40225
+  AND l.time_stamp >= CURDATE() - INTERVAL 1 DAY
+  AND l.time_stamp < CURDATE()
+  AND l.after_lv > 36
+  AND NOT EXISTS (
+      SELECT 1
+      FROM level_change_log AS l2
+      WHERE l2.uid = l.uid
+        AND l2.sid = l.sid
+        AND l2.time_stamp >= CURDATE() - INTERVAL 1 DAY
+        AND l2.time_stamp < CURDATE()
+        AND (
+            l2.time_stamp > l.time_stamp
+            OR (
+                l2.time_stamp = l.time_stamp
+                AND l2.id > l.id
+            )
+        )
+  )
+ORDER BY l.after_lv DESC;
+```
