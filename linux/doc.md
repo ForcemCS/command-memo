@@ -55,3 +55,7 @@ find . -mindepth 1   ! -name '.gocache'   ! -name '.gomodcache'   -exec rm -rf {
 ```
 ip -4 addr show ens33 | awk '/inet/ {print $2}' |cut -d/ -f1
 ```
+删除目录下的文件夹
+```
+find /var/local/ -maxdepth 1 -type d -name 'game-log-4*' -exec rm -rf -- {} +
+```
