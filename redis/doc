@@ -1,0 +1,102 @@
+1. 由客户端导致的CPU过高
+REDIS的CPU高，指的是在单位时间内干的计算工作多，而 QPS 表示：单位时间内 Redis 收到了多少条命令请求。
+
+CPU压力≈QPS×单条命令平均CPU成本
+
+QPS 越高，Redis 每秒需要处理的命令越多，一般 CPU 就越高。
+
+
+对于大Key的查询，会明显增加cpu的时间成本
+
+
+2. redis自身做后台工作处理
+
+大量 Key 过期，也会吃 CPU，在某一时间点会不会删除大key
+
+
+3.BigKey
+
+  ├─ 占用大量内存
+  │
+  ├─ 操作耗时高
+  │
+  ├─ 网络流量巨大
+  │
+  └─ 删除时可能非常重
+  
+  
+  
+CPU ↑
+QPS没涨
+   │
+   ├── SLOWLOG
+   │      ↓
+   │   有没有 HGETALL / SMEMBERS / ZRANGE / Lua
+   │
+   ├── BigKey
+   │      ↓
+   │   是否操作巨大数据结构
+   │
+   └── expired_keys
+          ↓
+      是否大量Key集中到期
+	  
+
+Redis CPU > 80%
+        │
+        ▼
+检查 QPS 是否明显上涨
+        │
+        ├── QPS ↑
+        │      └── 先查业务流量 / 重试风暴 / HotKey
+        │
+        └── QPS 没涨
+                │
+                ├── 检查 SLOWLOG
+                │
+                ├── 检查 expired_keys 增速
+                │
+                ├── 检查 commandstats
+                │
+                └── 触发 BigKey 低频扫描
+				
+				
+				
+监控计算资源，qps, 过期key的速率，连接数使用率等，还有拒绝连接数
+
+
+INFO commandstats  cpu升高可以通过这个命令检测
+
+
+
+
+   ├── Hit Rate
+      │
+      │      → 雪崩/穿透/Eviction
+      │
+      └── Latency
+	  
+	  
+Hit Rate  雪崩/穿透/Eviction
+
+
+缓存雪崩：  大量缓存，在短时间内一起失效。
+
+大量Key同时过期
+        ↓
+     Hit Rate ↓
+        ↓
+     Miss暴涨
+        ↓
+大量请求访问MySQL
+        ↓
+   MySQL CPU ↑
+        ↓
+     DB变慢
+        ↓
+业务请求超时
+
+
+
+缓存穿透 是查询的数据本来就不存在，解决缓存穿透的画，可以缓存NULL 
+
