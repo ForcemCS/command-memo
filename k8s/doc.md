@@ -89,3 +89,7 @@ kubectl create secret generic registry-secret \
   --type=kubernetes.io/dockerconfigjson \
   -n game
 ```
+### 查看日志
+```
+kubectl -n envoy-gateway-system logs -l 'k1=v1,k2=v2' -c envoy -f --prefix --tail=100 --max-log-requests=10
+```
