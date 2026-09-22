@@ -59,3 +59,7 @@ ip -4 addr show ens33 | awk '/inet/ {print $2}' |cut -d/ -f1
 ```
 find /var/local/ -maxdepth 1 -type d -name 'game-log-4*' -exec rm -rf -- {} +
 ```
+查找大目录
+```
+sudo du   -xhd1  /var    2>/dev/null   |sort -h
+```
