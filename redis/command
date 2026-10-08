@@ -1,0 +1,14 @@
+### zset查询排名
+```
+
+ZREVRANGE rank:mvpboss:20720 0 99
+
+
+ZREVRANGE rank:mvpboss:20720 0 99 WITHSCORES
+
+
+SELECT *
+FROM your_table
+WHERE uid IN (上面的100个UID)
+ORDER BY FIELD(uid, 上面的100个UID);
+```
