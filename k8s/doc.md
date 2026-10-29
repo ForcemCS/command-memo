@@ -107,3 +107,16 @@ kubectl -n roh5 get pods -o custom-columns='NAME:.metadata.name,IP:.status.podIP
     fi
 done
 ```
+### 监听端口及其进程
+```
+ubuntu@game-server:~$ sudo ss -lntp | grep ':3306'
+LISTEN    0         4096               0.0.0.0:3306             0.0.0.0:*        users:(("docker-proxy",pid=4394,fd=4))                                         
+LISTEN    0         4096                  [::]:3306                [::]:*        users:(("docker-proxy",pid=4402,fd=4))                                         
+ubuntu@game-server:~$ sudo lsof -nP -iTCP:3306 -sTCP:LISTEN
+COMMAND    PID USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+docker-pr 4394 root    4u  IPv4  29424      0t0  TCP *:3306 (LISTEN)
+docker-pr 4402 root    4u  IPv6  53405      0t0  TCP *:3306 (LISTEN)
+ubuntu@game-server:~$ sudo ps -fp 4394
+UID          PID    PPID  C STIME TTY          TIME CMD
+root        4394    1041  0 Jun05 ?        00:27:55 /usr/bin/docker-proxy -proto tcp -host-ip 0.0.0.0 -host-port 3306 -container-ip 172.17.0.4 -container-port 3306
+```
