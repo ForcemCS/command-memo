@@ -93,3 +93,17 @@ kubectl create secret generic registry-secret \
 ```
 kubectl -n envoy-gateway-system logs -l 'k1=v1,k2=v2' -c envoy -f --prefix --tail=100 --max-log-requests=10
 ```
+### 从 Kubernetes 网络测试 Pod IP 的 TCP 连通性
+```
+kubectl -n roh5 run port-check --image=busybox:1.36 --restart=Never -- sleep 3600
+
+kubectl -n roh5 get pods -o custom-columns='NAME:.metadata.name,IP:.status.podIP' --no-headers | while read -r name ip; do
+    [[ "$name" == game-roh5-server-* ]] || continue
+
+    if kubectl -n roh5 exec port-check -- nc -z -w 2 "$ip" 10010 >/dev/null 2>&1; then
+        echo "✅ $name ($ip) : 10010 TCP连接成功"
+    else
+        echo "❌ $name ($ip) : 10010 TCP连接失败"
+    fi
+done
+```
